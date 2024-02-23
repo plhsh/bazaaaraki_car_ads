@@ -14,16 +14,7 @@ setup_logging()
 class AdsManager:
     def __init__(self, api: BazarakiApi, scrapper: Scrapper): #, ads_db: AdsDatabase, subs_db: SubscriptionsDatabase):
         self._api = api
-        # self._ads_db = ads_db
-        # self._subs_db = subs_db
         self._scrapper = scrapper
-
-    # def request_updates(self) -> List[Ad]:
-    #     remote = self._get_cars_ads()
-    #     # local = self._ads_db.all()
-    #     updates = list(filter(lambda ad: ad not in local, remote))
-    #     self._ads_db.add_all(updates)
-    #     return updates
 
     def _get_cars_ads(self) -> List[Ad]:
         logging.info("Scrapping and parsing data ...")
@@ -43,8 +34,9 @@ class AdsManager:
         return result
 
 
-m = AdsManager(BazarakiApi(), Scrapper())
-res = m._get_cars_ads()
-print(f"Ads found: {len(res)}\n\n\n")
-for car in res:
-    print(car)
+def main():
+    m = AdsManager(BazarakiApi(), Scrapper())
+    res = m._get_cars_ads()
+    print(f"Ads found: {len(res)}\n\n\n")
+    for car in res:
+        print(car)
