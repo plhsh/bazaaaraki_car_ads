@@ -1,16 +1,9 @@
 import psycopg2
-from psycopg2 import sql
-from dataclasses import asdict
-import json
 from contextlib import contextmanager
+from logs.log_config import setup_logging
 import logging
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    filename='app.log',  # Указываете путь к файлу лога
-    filemode='a'  # 'a' для добавления к существующему содержимому, 'w' для перезаписи файла
-)
+setup_logging()
 
 
 class Database:
@@ -66,7 +59,8 @@ class Database:
                                 location_1 TEXT,
                                 location_2 TEXT,
                                 date TEXT,
-                                url TEXT UNIQUE
+                                url TEXT UNIQUE,
+                                ad_active BOOLEAN DEFAULT TRUE
                             );
                         """)
                 self.conn.commit()
@@ -74,38 +68,43 @@ class Database:
         except Exception as e:
             logging.error(f"An error occurred while creating the table: {e}")
 
-    def mark_ads_inactive(self):
-        """Отмечает все объявления как неактивные перед обновлением."""
+    def update_ads_active_status(self, active_ads_ids):
+        """Обновляет статус активности объявлений на основе списка активных ad_id."""
+        # Преобразование списка ID в строку для SQL запроса
+        active_ids_str = ','.join(f"'{ad_id}'" for ad_id in active_ads_ids)
+
         try:
             with self.database_cursor() as cursor:
-                cursor.execute("UPDATE baz_car_ads SET ad_active = FALSE;")
+                # Обновляем все объявления, чьи ad_id не находятся в списке активных, как неактивные
+                cursor.execute(f"UPDATE baz_car_ads SET ad_active = FALSE WHERE ad_id NOT IN ({active_ids_str});")
                 self.conn.commit()
         except Exception as e:
-            logging.error(f"An error occurred while marking ads as inactive: {e}")
-            self.conn.rollback()
+            logging.error(f"An error occurred while updating ads active status: {e}")
+            if self.conn and not self.conn.closed:
+                self.conn.rollback()
 
     def insert_or_update_ads_to_db(self, ads):
         """Вставляет или обновляет данные объявлений в базе данных, отмечая активные объявления."""
-        # Сначала отметьте все объявления как неактивные
-        self.mark_ads_inactive()
+        # Собираем список ad_id для всех передаваемых объявлений
+        active_ads_ids = [ad.id for ad in ads]
 
         insert_query = """
-            INSERT INTO baz_car_ads (ad_id, title, year, price, milage, transmission, engine_type, location_1, location_2, date, url, ad_active)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, TRUE)
-            ON CONFLICT (ad_id) 
-            DO UPDATE SET
-                title = EXCLUDED.title,
-                year = EXCLUDED.year,
-                price = EXCLUDED.price,
-                milage = EXCLUDED.milage,
-                transmission = EXCLUDED.transmission,
-                engine_type = EXCLUDED.engine_type,
-                location_1 = EXCLUDED.location_1,
-                location_2 = EXCLUDED.location_2,
-                date = EXCLUDED.date,
-                url = EXCLUDED.url,
-                ad_active = TRUE;  -- Обновление ad_active до TRUE для активных объявлений
-        """
+              INSERT INTO baz_car_ads (ad_id, title, year, price, milage, transmission, engine_type, location_1, location_2, date, url, ad_active)
+              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, TRUE)
+              ON CONFLICT (ad_id) 
+              DO UPDATE SET
+                  title = EXCLUDED.title,
+                  year = EXCLUDED.year,
+                  price = EXCLUDED.price,
+                  milage = EXCLUDED.milage,
+                  transmission = EXCLUDED.transmission,
+                  engine_type = EXCLUDED.engine_type,
+                  location_1 = EXCLUDED.location_1,
+                  location_2 = EXCLUDED.location_2,
+                  date = EXCLUDED.date,
+                  url = EXCLUDED.url,
+                  ad_active = TRUE;  -- Обновление ad_active до TRUE для активных объявлений
+          """
         try:
             with self.database_cursor() as cursor:
                 for ad in ads:
@@ -116,5 +115,10 @@ class Database:
                 logging.info(f"{len(ads)} ads inserted/updated in the database.")
         except Exception as e:
             logging.error(f"An error occurred while inserting/updating ads to the database: {e}")
-            self.conn.rollback()
+            if self.conn and not self.conn.closed:
+                self.conn.rollback()
+
+        # После обновления/вставки всех объявлений, обновляем статус активности
+        self.update_ads_active_status(active_ads_ids)
+
 

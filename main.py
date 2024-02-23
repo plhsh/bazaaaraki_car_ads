@@ -1,12 +1,14 @@
+import logging
 from typing import List
-
 from api.bazaraki_api import BazarakiApi
 from api.district import District
-# from db.ads import AdsDatabase
-# from db.subscriptions import SubscriptionsDatabase
 from scrapper.ad import Ad
 from scrapper.scrapper import Scrapper
 from db.db_config import db_connection
+from logs.log_config import setup_logging
+import logging
+
+setup_logging()
 
 
 class AdsManager:
@@ -24,10 +26,11 @@ class AdsManager:
     #     return updates
 
     def _get_cars_ads(self) -> List[Ad]:
+        logging.info("Scrapping and parsing data ...")
         result = []
         district = District.PAPHOS
         min_price = 5000
-        max_price = 20000
+        max_price = 30000
         query = ""
         page = 1
         next_page_exists = True
@@ -36,7 +39,7 @@ class AdsManager:
             scr_data, next_page_exists = self._scrapper.scrap(cars_html)
             result.extend(scr_data)
             page += 1
-        db_connection.insert_ads_to_db(result)
+        db_connection.insert_or_update_ads_to_db(result)
         return result
 
 

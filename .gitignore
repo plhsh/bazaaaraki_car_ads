@@ -1,4 +1,4 @@
 /.idea/
 /.venv/
 /db/db_config.py
-/db/app.log
+/logs/app.log
