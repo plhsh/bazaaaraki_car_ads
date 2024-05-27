@@ -1,4 +1,3 @@
-import logging
 from typing import List
 from api.bazaraki_api import BazarakiApi
 from api.district import District

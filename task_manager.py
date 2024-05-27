@@ -13,7 +13,7 @@ def job():
 
 
 # Назначаем задачу на выполнение каждую минуту
-schedule.every(20).minutes.do(job)
+schedule.every(15).minutes.do(job)
 
 while True:
     schedule.run_pending()
