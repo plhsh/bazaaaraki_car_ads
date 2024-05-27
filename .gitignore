@@ -2,3 +2,4 @@
 /.venv/
 /db/db_config.py
 /logs/app.log
+/.env
