@@ -1,4 +1,4 @@
- import schedule
+import schedule
 import time
 import logging
 from logs.log_config import setup_logging

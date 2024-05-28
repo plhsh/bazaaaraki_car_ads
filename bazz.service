@@ -1,0 +1,17 @@
+[Unit]
+Description=Bazz Scrapper Scheduler
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+ExecStart=/var/www/bazaaaraki_car_ads/venv/bin/python /var/www/bazaaaraki_car_ads/task_manager.py
+WorkingDirectory=/var/www/bazaaaraki_car_ads/
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+RestartSec=30
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
