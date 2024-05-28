@@ -12,6 +12,8 @@ def job():
     main()
 
 
+job()
+
 # Назначаем задачу на выполнение каждую минуту
 schedule.every(15).minutes.do(job)
 

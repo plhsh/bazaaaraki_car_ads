@@ -16,10 +16,10 @@ class BazarakiApi:
         _districts = list(map(lambda district: district.value, districts))
         # Создание базового словаря параметров
         _params = {
-            "cities": _districts,
+            # "cities": _districts,
             "price_min": price_min,
             "price_max": price_max,
-            "q": q
+            # "q": q
         }
         # Добавление ключа 'page', если page больше 1
         if page > 1:
@@ -29,6 +29,6 @@ class BazarakiApi:
 
 
 # r = BazarakiApi()
-# page = r.get_cars([District.PAPHOS], 5000, 6000, "honda")
+# page = r.get_cars([District.PAPHOS], 6000, 30000, 1, "")
 # print(type(page))
 # print(page)

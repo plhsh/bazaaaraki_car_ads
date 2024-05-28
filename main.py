@@ -19,7 +19,7 @@ class AdsManager:
         logging.info("Scrapping and parsing data ...")
         result = []
         district = District.PAPHOS
-        min_price = 5000
+        min_price = 6000
         max_price = 30000
         query = ""
         page = 1

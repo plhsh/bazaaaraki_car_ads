@@ -54,7 +54,8 @@ class Scrapper:
             if len(res) == 0:
                 return ["0", "", ""]
             if not str(res[0]).rstrip(" km").isdigit():
-                res[0] = "0"
+                # res[0] = "0"
+                res = ["0", "", ""]
             return res
         except AttributeError:
             return ["0", "", ""]
